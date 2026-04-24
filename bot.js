@@ -1,4 +1,4 @@
-// 🔧 Fix conexión Render (MUY IMPORTANTE)
+// 🔧 FIX Render / Discord conexión
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
@@ -12,15 +12,20 @@ process.on('unhandledRejection', err => {
 });
 
 // 📦 Imports
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, SlashCommandBuilder } = require('discord.js');
 const express = require('express');
 
-// 🤖 Cliente Discord
+// 🤖 Cliente Discord (con fix WebSocket)
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+    intents: [GatewayIntentBits.Guilds],
+    ws: {
+        properties: {
+            browser: "Discord iOS"
+        }
+    }
 });
 
-// 🔍 Debug del bot
+// 🔍 Eventos debug
 client.on('ready', () => {
     console.log(`✅ Bot conectado como ${client.user.tag}`);
 });
@@ -29,6 +34,14 @@ client.on('error', console.error);
 
 client.on('debug', (info) => {
     console.log('🐛 DEBUG:', info);
+});
+
+client.on('disconnect', () => {
+    console.log('🔌 Bot desconectado');
+});
+
+client.on('reconnecting', () => {
+    console.log('🔄 Reconectando...');
 });
 
 // 🌐 Servidor web (Render)
@@ -43,11 +56,11 @@ app.listen(PORT, () => {
     console.log(`✅ Servidor web corriendo en puerto ${PORT}`);
 });
 
-// 💰 Tasas (puedes ajustar luego)
+// 💰 Tasas
 const TASAS = {
-    COP: { robuxAMoneda: 35, monedaARobux: 1/35, simbolo: '$', nombre: 'COP' },
-    MXN: { robuxAMoneda: 0.155, monedaARobux: 1/0.155, simbolo: '$', nombre: 'MXN' },
-    USD: { robuxAMoneda: 0.0083, monedaARobux: 1/0.0083, simbolo: '$', nombre: 'USD' }
+    COP: { robuxAMoneda: 35, monedaARobux: 1 / 35 },
+    MXN: { robuxAMoneda: 0.155, monedaARobux: 1 / 0.155 },
+    USD: { robuxAMoneda: 0.0083, monedaARobux: 1 / 0.0083 }
 };
 
 // 🧮 Funciones
@@ -66,16 +79,20 @@ client.once('ready', async () => {
     const commands = [
         new SlashCommandBuilder()
             .setName('robux')
-            .setDescription('Convierte Robux a dinero')
+            .setDescription('Convierte Robux a COP')
             .addIntegerOption(option =>
-                option.setName('cantidad').setDescription('Robux').setRequired(true)
+                option.setName('cantidad')
+                    .setDescription('Cantidad de Robux')
+                    .setRequired(true)
             ),
 
         new SlashCommandBuilder()
             .setName('dinero')
             .setDescription('Convierte dinero a Robux')
             .addNumberOption(option =>
-                option.setName('cantidad').setDescription('Dinero').setRequired(true)
+                option.setName('cantidad')
+                    .setDescription('Cantidad en COP')
+                    .setRequired(true)
             )
     ];
 
@@ -83,7 +100,7 @@ client.once('ready', async () => {
         await client.application.commands.set(commands);
         console.log('✅ Comandos registrados');
     } catch (error) {
-        console.error(error);
+        console.error('❌ Error registrando comandos:', error);
     }
 });
 
