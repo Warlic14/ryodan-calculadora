@@ -259,4 +259,8 @@ client.on('interactionCreate', async interaction => {
 });
 
 // Login del bot (usa variable de entorno)
-client.login(process.env.DISCORD_TOKEN);
+console.log("🚀 Llegando al login...");
+
+client.login(process.env.DISCORD_TOKEN)
+    .then(() => console.log("✅ Login enviado"))
+    .catch(err => console.error("❌ Error en login:", err));
