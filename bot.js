@@ -21,9 +21,7 @@ app.get('/ping', (req, res) => {
     res.send('Pong! 🏓');
 });
 
-app.listen(PORT, () => {
-    console.log(`✅ Servidor web corriendo en puerto ${PORT}`);
-});
+// NO iniciar el servidor aquí - esperar a que el bot se conecte
 
 // Tasas de conversión reales
 // 100 Robux = 3,500 COP → 1 Robux = 35 COP
@@ -69,6 +67,11 @@ client.once('ready', async () => {
     console.log(`✅ Bot conectado como ${client.user.tag}`);
     console.log(`📊 ID del bot: ${client.user.id}`);
     console.log(`🌐 Conectado a ${client.guilds.cache.size} servidor(es)`);
+    
+    // Iniciar servidor Express DESPUÉS de que el bot esté listo
+    app.listen(PORT, () => {
+        console.log(`✅ Servidor web corriendo en puerto ${PORT}`);
+    });
     
     // Registrar comandos slash
     const commands = [
