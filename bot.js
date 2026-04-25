@@ -67,6 +67,8 @@ function dineroARobux(dinero, moneda = 'COP') {
 // Evento cuando el bot está listo
 client.once('ready', async () => {
     console.log(`✅ Bot conectado como ${client.user.tag}`);
+    console.log(`📊 ID del bot: ${client.user.id}`);
+    console.log(`🌐 Conectado a ${client.guilds.cache.size} servidor(es)`);
     
     // Registrar comandos slash
     const commands = [
@@ -258,6 +260,19 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+// Manejadores de errores del cliente
+client.on('error', error => {
+    console.error('❌ Error del cliente Discord:', error);
+});
+
+client.on('warn', info => {
+    console.warn('⚠️ Advertencia:', info);
+});
+
+client.on('shardError', error => {
+    console.error('❌ Error de shard:', error);
+});
+
 // Login del bot (usa variable de entorno)
 const token = process.env.DISCORD_TOKEN;
 
@@ -269,8 +284,30 @@ if (!token) {
 
 console.log('🔑 Token detectado, longitud:', token.length, 'caracteres');
 console.log('🔑 Primeros 10 caracteres:', token.substring(0, 10) + '...');
+console.log('🔌 Intentando conectar con Discord...');
 
-client.login(token).catch(error => {
-    console.error('❌ Error al conectar con Discord:', error.message);
-    process.exit(1);
-});
+client.login(token)
+    .then(() => {
+        console.log('🔌 Login exitoso, esperando evento ready...');
+    })
+    .catch(error => {
+        console.error('❌ ERROR AL HACER LOGIN:');
+        console.error('❌ Tipo de error:', error.name);
+        console.error('❌ Mensaje:', error.message);
+        console.error('❌ Código:', error.code);
+        console.error('❌ Stack:', error.stack);
+        
+        if (error.code === 'TokenInvalid') {
+            console.error('');
+            console.error('🔧 SOLUCIÓN:');
+            console.error('1. Ve a https://discord.com/developers/applications');
+            console.error('2. Selecciona tu aplicación');
+            console.error('3. Ve a la sección "Bot"');
+            console.error('4. Haz clic en "Reset Token"');
+            console.error('5. Copia el NUEVO token COMPLETO');
+            console.error('6. Actualízalo en Render.com → Environment → DISCORD_TOKEN');
+            console.error('7. Reinicia el servicio');
+        }
+        
+        process.exit(1);
+    });
