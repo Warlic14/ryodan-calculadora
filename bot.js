@@ -14,14 +14,27 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.send('Bot de Calculadora de Robux está activo! 🤖');
+    const status = client.isReady() ? '🟢 Online' : '🟡 Conectando...';
+    res.send(`Bot de Calculadora de Robux - Estado: ${status}`);
 });
 
 app.get('/ping', (req, res) => {
     res.send('Pong! 🏓');
 });
 
-// NO iniciar el servidor aquí - esperar a que el bot se conecte
+app.get('/status', (req, res) => {
+    res.json({
+        status: client.isReady() ? 'online' : 'connecting',
+        user: client.user?.tag || 'No conectado',
+        servers: client.guilds.cache.size || 0
+    });
+});
+
+// Iniciar servidor Express INMEDIATAMENTE (Render lo necesita)
+app.listen(PORT, () => {
+    console.log(`✅ Servidor web corriendo en puerto ${PORT}`);
+    console.log(`📡 Render puede detectar el servicio ahora`);
+});
 
 // Tasas de conversión reales
 // 100 Robux = 3,500 COP → 1 Robux = 35 COP
@@ -67,11 +80,6 @@ client.once('ready', async () => {
     console.log(`✅ Bot conectado como ${client.user.tag}`);
     console.log(`📊 ID del bot: ${client.user.id}`);
     console.log(`🌐 Conectado a ${client.guilds.cache.size} servidor(es)`);
-    
-    // Iniciar servidor Express DESPUÉS de que el bot esté listo
-    app.listen(PORT, () => {
-        console.log(`✅ Servidor web corriendo en puerto ${PORT}`);
-    });
     
     // Registrar comandos slash
     const commands = [
