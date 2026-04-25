@@ -259,4 +259,18 @@ client.on('interactionCreate', async interaction => {
 });
 
 // Login del bot (usa variable de entorno)
-client.login(process.env.DISCORD_TOKEN);
+const token = process.env.DISCORD_TOKEN;
+
+if (!token) {
+    console.error('❌ ERROR: No se encontró DISCORD_TOKEN en las variables de entorno');
+    console.error('❌ Verifica que la variable esté configurada en Render.com');
+    process.exit(1);
+}
+
+console.log('🔑 Token detectado, longitud:', token.length, 'caracteres');
+console.log('🔑 Primeros 10 caracteres:', token.substring(0, 10) + '...');
+
+client.login(token).catch(error => {
+    console.error('❌ Error al conectar con Discord:', error.message);
+    process.exit(1);
+});
